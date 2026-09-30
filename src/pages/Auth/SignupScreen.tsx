@@ -10,8 +10,9 @@ export interface SignupScreenProps {
 }
 
 export const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess }) => {
-  const { signUp, signIn, signInGuest, isLoading } = useAuth();
+  const { signUp, signIn, signInGuest } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,30 +28,44 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess }) => {
       return;
     }
 
-    if (isLoginMode) {
-      const { user, error } = await signIn(email, password);
-      if (error) {
-        setErrorMsg(error.message || 'Failed to log in.');
-      } else if (user) {
-        onSuccess();
+    setIsSubmitting(true);
+    try {
+      if (isLoginMode) {
+        const { user, error } = await signIn(email, password);
+        if (error) {
+          setErrorMsg(error.message || 'Failed to log in.');
+        } else if (user) {
+          onSuccess();
+        }
+      } else {
+        const { user, error } = await signUp(email, password, name || 'Health Explorer');
+        if (error) {
+          setErrorMsg(error.message || 'Failed to create account.');
+        } else if (user) {
+          onSuccess();
+        }
       }
-    } else {
-      const { user, error } = await signUp(email, password, name || 'Health Explorer');
-      if (error) {
-        setErrorMsg(error.message || 'Failed to create account.');
-      } else if (user) {
-        onSuccess();
-      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGuest = async () => {
     setErrorMsg(null);
-    const { user, error } = await signInGuest();
-    if (error) {
-      setErrorMsg(error.message || 'Failed to start guest session.');
-    } else if (user) {
-      onSuccess();
+    setIsSubmitting(true);
+    try {
+      const { user, error } = await signInGuest();
+      if (error) {
+        setErrorMsg(error.message || 'Failed to start guest session.');
+      } else if (user) {
+        onSuccess();
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -172,7 +187,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess }) => {
               </div>
             )}
 
-            <Button variant="primary" size="md" fullWidth type="submit" isLoading={isLoading} style={{ marginTop: '8px' }}>
+            <Button variant="primary" size="md" fullWidth type="submit" isLoading={isSubmitting} style={{ marginTop: '8px' }}>
               {isLoginMode ? 'Log In' : 'Sign Up & Continue'}
             </Button>
           </form>
@@ -217,7 +232,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess }) => {
             variant="secondary"
             fullWidth
             onClick={handleGuest}
-            isLoading={isLoading}
+            isLoading={isSubmitting}
             icon={<UserCheck size={18} color="var(--accent-rose)" />}
           >
             Continue as Guest (Anonymous)
