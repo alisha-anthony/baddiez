@@ -1,32 +1,57 @@
-# React + TypeScript + Vite
+# SHE Scan (Baddiez)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A personalized food scanning and health safety companion built with React, Vite, TypeScript, and Supabase.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Getting Started
 
-## React Compiler
+### 1. Install Dependencies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### 2. Configure Environment Variables
+
+The application uses Supabase for database persistence (user profiles, scan history, and product caching) and authentication.
+
+Copy the `.env.example` file to create your `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Open [.env](file:///c:/Users/aanya/Desktop/baddiez/baddiez/.env) and populate it with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+> **Note:** If `.env` is not configured or left with placeholder values, the app automatically falls back to offline local storage (`localStorage`) so you can still test and demo seamlessly.
+
+### 3. Database Schema Setup
+
+To create the required tables (`profiles`, `scans`, `products_cache`) and Row Level Security (RLS) policies:
+
+1. Open your [Supabase Dashboard](https://supabase.com/dashboard).
+2. Go to **SQL Editor**.
+3. Run the SQL script located in [`supabase/migrations/001_create_schema.sql`](file:///c:/Users/aanya/Desktop/baddiez/baddiez/supabase/migrations/001_create_schema.sql).
+
+### 4. Run Development Server
+
+```bash
+npm run dev
+```
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: CSS & Framer Motion
+- **Icons**: Lucide React
+- **Database & Auth**: Supabase (@supabase/supabase-js)
+- **Data Source**: Open Food Facts API + Barcode Detector
+

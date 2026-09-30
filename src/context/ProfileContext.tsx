@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { HealthProfile, LifeStage, DiabetesType, Allergen } from '../types/profile';
-import { fetchProfile, saveProfile, deleteUserAccountAndData } from '../services/supabase';
+import { fetchProfile, saveProfile, deleteUserAccountAndData, getStoredLocalUser } from '../services/supabase';
 import { useAuth } from './AuthContext';
 
 interface ProfileContextType {
@@ -38,9 +38,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     async function load() {
-      if (user?.id) {
+      const activeId = user?.id || getStoredLocalUser()?.id;
+      if (activeId) {
         setIsLoading(true);
-        const data = await fetchProfile(user.id);
+        const data = await fetchProfile(activeId);
         if (data) {
           setProfile(data);
         }
@@ -63,13 +64,28 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const completeOnboarding = async (consentGiven: boolean): Promise<boolean> => {
-    if (!user?.id) return false;
+    let currentUserId = user?.id;
+
+    if (!currentUserId) {
+      const stored = getStoredLocalUser();
+      if (stored?.id) {
+        currentUserId = stored.id;
+      } else {
+        const fallbackGuest = {
+          id: 'guest-' + Math.random().toString(36).substring(2, 9),
+          email: undefined,
+          is_anonymous: true,
+        };
+        localStorage.setItem('shescan_local_user', JSON.stringify(fallbackGuest));
+        currentUserId = fallbackGuest.id;
+      }
+    }
 
     const newProfile: HealthProfile = {
-      id: user.id,
-      displayName: user.user_metadata?.display_name || 'Health Explorer',
-      email: user.email || null,
-      isAnonymous: Boolean(user.is_anonymous),
+      id: currentUserId,
+      displayName: user?.user_metadata?.display_name || 'Health Explorer',
+      email: user?.email || null,
+      isAnonymous: Boolean(user?.is_anonymous ?? true),
       lifeStages: onboardingDraft.lifeStages || [],
       diabetesType: onboardingDraft.diabetesType || 'none',
       lactoseIntolerant: Boolean(onboardingDraft.lactoseIntolerant),
@@ -80,12 +96,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updatedAt: new Date().toISOString(),
     };
 
-    const { error } = await saveProfile(newProfile);
-    if (!error) {
-      setProfile(newProfile);
-      return true;
-    }
-    return false;
+    await saveProfile(newProfile);
+    setProfile(newProfile);
+    return true;
   };
 
   const updateProfile = async (updated: Partial<HealthProfile>): Promise<boolean> => {

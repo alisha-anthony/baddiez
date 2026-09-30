@@ -40,7 +40,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     borderColor = 'rgba(156, 163, 175, 0.3)';
   }
 
-  const baseStyle: React.CSSProperties = {
+  const baseStyle: any = {
     background:
       variant === 'rose'
         ? 'linear-gradient(135deg, rgba(232, 143, 167, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)'
@@ -57,7 +57,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 
   return (
     <motion.div
-      style={baseStyle}
+      style={baseStyle as any}
       whileHover={variant === 'interactive' ? { y: -2, background: 'var(--glass-bg-hover)' } : undefined}
       whileTap={variant === 'interactive' ? { y: 0 } : undefined}
       {...rest}

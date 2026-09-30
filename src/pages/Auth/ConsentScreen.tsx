@@ -17,10 +17,14 @@ export const ConsentScreen: React.FC<ConsentScreenProps> = ({ onConsented }) => 
   const handleConfirm = async () => {
     if (!agreed) return;
     setIsSubmitting(true);
-    const success = await completeOnboarding(true);
-    setIsSubmitting(false);
-    if (success) {
+    try {
+      await completeOnboarding(true);
       onConsented();
+    } catch (err) {
+      console.warn('Error completing onboarding consent:', err);
+      onConsented();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
